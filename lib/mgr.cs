@@ -11,19 +11,22 @@ namespace MeetLocker
     public static class Mgr
     {
         /// <summary>
-        /// Give a file and a password, generate a key, and stuff the file bytes into password-protected
-        /// ZIP file
+        /// Give a file and a password, generate a key, and stuff the file bytes into password-protected ZIP file
         /// </summary>
         /// <returns>The key</returns>
         public static async Task<string> Store(string pwd, string filename, Stream file)
         {
-            string key = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+            byte[] uniq_part = Guid.NewGuid().ToByteArray();
+            byte[] rand_part = RandomNumberGenerator.GetBytes(uniq_part.Length / 4); // don't get too long!
+            string key = Convert.ToHexString(uniq_part) + Convert.ToHexString(rand_part);
+
             string zip_file_path = GetFilePath(key, pwd);
             using (Stream zip_file = File.Create(zip_file_path))
             {
                 using (ZipOutputStream zip_file_stream = new ZipOutputStream(zip_file))
                 {
-                    zip_file_stream.PutNextEntry(new ZipEntry(filename));
+                    var entry = new ZipEntry(filename);
+                    zip_file_stream.PutNextEntry(entry);
                     zip_file_stream.Password = pwd;
                     await file.CopyToAsync(zip_file_stream);
                 }
@@ -87,27 +90,34 @@ namespace MeetLocker
                 if (sm_strFilesDirPath != null) // cheap check
                     return sm_strFilesDirPath;
 
-                sm_strFilesDirPath = 
-                    Path.Combine
-                    (
-                        Path.GetDirectoryName
+                lock (sm_filesDirPathLock) // rare path to head down
+                {
+                    if (sm_strFilesDirPath != null) // cheap check again
+                        return sm_strFilesDirPath;
+
+                    string files_dir_path =
+                        Path.Combine
                         (
-                            // not something you want to do all the time
-                            Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName
-                            ?? 
-                            ""
-                        ) 
-                        ?? 
-                        "", 
-                        "files"
-                    );
+                            Path.GetDirectoryName
+                            (
+                                // not something you want to do all the time, hence all this code
+                                Assembly.GetExecutingAssembly().GetModules()[0].FullyQualifiedName
+                                ??
+                                ""
+                            )
+                            ??
+                            "",
+                            "files"
+                        );
+                    if (!Directory.Exists(files_dir_path))
+                        Directory.CreateDirectory(files_dir_path);
 
-                if (!Directory.Exists(sm_strFilesDirPath))
-                    Directory.CreateDirectory(sm_strFilesDirPath);
-
-                return sm_strFilesDirPath;
+                    sm_strFilesDirPath = files_dir_path;
+                    return sm_strFilesDirPath;
+                }
             }
         }
         private static string? sm_strFilesDirPath = null;
+        private static object sm_filesDirPathLock = new object();
     }
 }
