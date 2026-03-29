@@ -41,6 +41,9 @@ namespace MeetLocker
         public static async Task Retrieve(string key, string pwd, FileRetrieveHandler handler)
         {
             string file_path = GetFilePath(key, pwd);
+            if (!File.Exists(file_path))
+                throw new Exception("File not found");
+
             using (Stream file_stream = File.OpenRead(file_path))
             {
                 using (ZipFile zip_file = new ZipFile(file_stream))
