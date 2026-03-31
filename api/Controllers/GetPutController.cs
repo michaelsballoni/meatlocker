@@ -25,9 +25,6 @@ namespace api.Controllers
         [HttpPost("get")]
         public async Task<ActionResult<string>> Get(GetClass get)
         {
-            if (get.key == null || get.secret == null)
-                Forbid();
-
             FileRetrieveHandler handler = Stream (string filename) => {
                 var content_disposition = new ContentDispositionHeaderValue("attachment");
                 content_disposition.SetHttpFileName(filename);
@@ -41,12 +38,12 @@ namespace api.Controllers
 
     public class PutResponse
     {
-        public string? key {  get; set; }
+        public required string key {  get; set; }
     }
 
     public class GetClass
     {
-        public string? key { get; set; }
-        public string? secret { get; set; }
+        public required string key { get; set; }
+        public required string secret { get; set; }
     }
 }
