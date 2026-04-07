@@ -11,14 +11,16 @@ namespace MeetLocker
     public static class Mgr
     {
         /// <summary>
-        /// Give a file and a password, generate a key, and stuff the file bytes into password-protected ZIP file
+        /// Give a password and a file, generate a key, and stuff the file bytes into password-protected ZIP file
         /// </summary>
         /// <returns>The key</returns>
         public static async Task<string> Store(string pwd, string filename, Stream file)
         {
-            byte[] uniq_part = Guid.NewGuid().ToByteArray();
-            byte[] rand_part = RandomNumberGenerator.GetBytes(uniq_part.Length / 4); // don't get too long!
-            string key = Convert.ToHexString(uniq_part) + Convert.ToHexString(rand_part);
+            // build the key to the castle, er, ZIP file
+            string key = 
+                Convert.ToHexString(Guid.NewGuid().ToByteArray()) 
+                + 
+                Convert.ToHexString(RandomNumberGenerator.GetBytes(4));
 
             string zip_file_path = GetFilePath(key, pwd);
             using (Stream zip_file = File.Create(zip_file_path))
