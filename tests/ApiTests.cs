@@ -33,15 +33,13 @@ namespace tests
                 var byte_content = new ByteArrayContent(file_bytes);
                 byte_content.Headers.ContentType = MediaTypeHeaderValue.Parse("text/plain");
 
-                var request_content = new MultipartFormDataContent();
-                request_content.Add(byte_content, "file", filename);
-
                 var form_dict = new Dictionary<string, string>();
                 form_dict["pwd"] = pwd;
+                form_dict["filename"] = filename;
+                form_dict["text"] = test_string;
                 var form_content = new FormUrlEncodedContent(form_dict);
-                request_content.Add(form_content);
 
-                var put_response = client.PostAsync(ToUrl(base_uri, "put"), request_content).Result;
+                var put_response = client.PostAsync(ToUrl(base_uri, "put"), form_content).Result;
                 Assert.IsTrue(put_response.IsSuccessStatusCode);
                 key = put_response.Content.ReadAsStringAsync().Result;
             }

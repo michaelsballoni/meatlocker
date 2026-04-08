@@ -1,6 +1,9 @@
 ﻿using MeetLocker;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Net.Http.Headers;
+using System.Globalization;
+using System.Text;
 
 namespace api.Controllers
 {
@@ -8,38 +11,39 @@ namespace api.Controllers
     [Route("api")]
     public class GetPutController : ControllerBase
     {
-        [HttpPost("put")]
-        public async Task<ActionResult<string>> Put([FromForm] string pwd, [FromForm] IFormFile file)
+        public class PutForm
         {
-            pwd = TrimParam(pwd);
+            public string? pwd { get; set; }
+            public string? filename { get; set; }
+            public string? text { get; set; }
+        }
+        [HttpPost("put")]
+        public async Task<ActionResult<string>> Put([FromForm] PutForm form)
+        {
             string key;
-            using (var file_stream = file.OpenReadStream())
-                key = await Mgr.Store(pwd, file.FileName, file_stream);
+            using (var text_stream = new MemoryStream(Encoding.UTF8.GetBytes(form.text ?? "")))
+                key = await Mgr.Store(form.pwd ?? "", form.filename ?? "", text_stream);
             return Ok(key);
         }
 
-        [HttpPost("get")]
-        public async Task<ActionResult> Get([FromForm] string key, [FromForm] string pwd)
+        public class GetForm
         {
-            key = TrimParam(key);
-            pwd = TrimParam(pwd);
+            public string? key { get; set; }
+            public string? pwd { get; set; }
+        }
+        [HttpPost("get")]
+        public async Task<ActionResult> Get([FromForm] GetForm form)
+        {
             string output_filename = "";
+            var output_stream = new MemoryStream();
             FileRetrieveHandler handler = Stream (string filename) => {
                 output_filename = filename;
-                var content_disposition = new ContentDispositionHeaderValue("attachment");
-                content_disposition.SetHttpFileName(output_filename);
-                Response.Headers[HeaderNames.ContentDisposition] = content_disposition.ToString();
-                return Response.Body;
+                return output_stream;
             };
-
-            await Mgr.Retrieve(key, pwd, handler);
+            await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler);
+            Response.Headers.Append("X-Get-Filename", output_filename);
+            await Response.BodyWriter.WriteAsync(output_stream.ToArray());
             return new EmptyResult();
-        }
-
-        private static string TrimParam(string param)
-        {
-            int eq = param.IndexOf('=');
-            return eq > 0 ? param.Substring(eq + 1) : param;
         }
     }
 }
