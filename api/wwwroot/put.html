@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>Meet Locker - Store Text</title>
+	<style>
+		html, body {
+			height: 100%
+		}
+	</style>
+	<script>
+		async function doStore() {
+			const form = document.forms[0];
+			const response = await fetch("api/put", { method: 'post', body: new FormData(form) });
+			if (response.ok) {
+                document.getElementById("output").innerHTML = "Text stored!<br><br>Here is the key needed to retrieve the text:<br><br>" + document.createTextNode(await response.text()).textContent;
+			}
+			else
+				alert("Error occurred storing text!");
+		}
+	</script>
+</head>
+<body>
+	<table width="100%" height="100%">
+		<tr valign="middle">
+			<td align=center>
+				<h1>Store Text - Meet Locker</h1>
+				<table>
+					<tr>
+						<td align="left">
+							<form onsubmit="return false">
+								What text to store?<br>
+								<textarea name="text" cols="50" rows="10"></textarea>
+								<br>
+								<br>
+
+								What password to secure the text?<br>
+								<input name="pwd" size="50"><br>
+								<br>
+									
+								<div align="right">
+									<input type=button onclick="window.location = 'index.html'" value="Close">
+									<input type="submit" onclick="doStore()" value="Store File">
+								</div>
+							</form>
+
+							<div id="output"></div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

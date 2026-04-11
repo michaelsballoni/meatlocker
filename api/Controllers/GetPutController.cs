@@ -1,8 +1,5 @@
 ﻿using MeetLocker;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.Net.Http.Headers;
-using System.Globalization;
 using System.Text;
 
 namespace api.Controllers
@@ -22,7 +19,7 @@ namespace api.Controllers
         {
             string key;
             using (var text_stream = new MemoryStream(Encoding.UTF8.GetBytes(form.text ?? "")))
-                key = await Mgr.Store(form.pwd ?? "", form.filename ?? "", text_stream);
+                key = await Mgr.Store(form.pwd ?? "", form.filename ?? "filename", text_stream);
             return Ok(key);
         }
 
@@ -34,15 +31,11 @@ namespace api.Controllers
         [HttpPost("get")]
         public async Task<ActionResult> Get([FromForm] GetForm form)
         {
-            string output_filename = "";
-            var output_stream = new MemoryStream();
             FileRetrieveHandler handler = Stream (string filename) => {
-                output_filename = filename;
-                return output_stream;
+                Response.Headers.Append("X-Get-Filename", filename);
+                return Response.Body;
             };
             await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler);
-            Response.Headers.Append("X-Get-Filename", output_filename);
-            await Response.BodyWriter.WriteAsync(output_stream.ToArray());
             return new EmptyResult();
         }
     }
