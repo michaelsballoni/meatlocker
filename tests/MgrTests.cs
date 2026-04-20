@@ -21,6 +21,9 @@
 
             string file_path_set = Mgr.GetFilePath("key", "val");
             Assert.AreEqual(file_path_set, Mgr.GetFilePath("key", "val"));
+
+            string file_path_long = Mgr.GetFilePath("keykeykeykeykeykey", "valvalvalvalvalvalval");
+            Assert.AreEqual(file_path_long, Mgr.GetFilePath("keykeykeykeykeykey", "valvalvalvalvalvalval"));
         }
 
         [TestMethod]

@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
 <head>
 	<title>Meet Locker - Retrieve Text</title>
 	<style>
@@ -9,13 +10,14 @@
 	<script>
 		async function doRetrieve() {
 			const form = document.forms[0];
-			const response = await fetch("api/put", { method: 'post', body: new FormData(form) });
+			const response = await fetch("api/get", { method: 'post', body: new FormData(form) });
 			if (response.ok) {
-                alert("Text stored!");
-                window.location = 'index.html';
+                document.getElementById("output").innerHTML = "Text retrieved!";
+                document.getElementById("text").value = await response.text();
+                document.getElementById("copyButton").style.display = "";
 			}
 			else
-				alert("Error occurred storing text!");
+				alert("Error occurred retrieving text.  Double check your key and secret and try again.");
 		}
 	</script>
 </head>
@@ -27,16 +29,13 @@
 				<table>
 					<tr>
 						<td align="left">
-							<form method="post">
-								Provide Key and Secret to retrieve the text:<br>
+							<form method="post" onsubmit="return false">
+								What key to unlock the locker?<br>
+								<input size="80" name="key"><br>
 								<br>
 
-								Key:<br>
-								<input size="50" name="key"><br>
-								<br>
-
-								Secret:<br>
-								<input size="50" name="pwd"><br>
+								What secret to open the text?<br>
+								<input size="80" name="pwd"><br>
 								<br>
 
 								<input type=button onclick="window.location = 'index.html'" value="Cancel">
@@ -45,13 +44,16 @@
 								<br>
 								<br>
 
-								Retrieved Text:
+								<div id="output"></div>
 								<br />
-								<textarea name="text" cols="50" rows="10"></textarea>
+								<textarea id="text" name="text" cols="80" rows="10"></textarea>
+								<br />
+								<input id="copyButton" type="button" value="Copy" style="display: none" onclick="navigator.clipboard.writeText(document.getElementById('text').value)" />
 							</form>
 						</td>
 					</tr>
 				</table>
+				Copyright &copy; Michael Balloni.  2026.  All rights reserved.
 			</td>
 		</tr>
 	</table>

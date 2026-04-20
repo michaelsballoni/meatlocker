@@ -17,10 +17,11 @@ namespace MeetLocker
         public static async Task<string> Store(string pwd, string filename, Stream file)
         {
             // build the key to the castle, er, ZIP file
+            byte[] guid_bytes = Guid.NewGuid().ToByteArray();
             string key = 
-                Convert.ToHexString(Guid.NewGuid().ToByteArray()) 
-                + 
-                Convert.ToHexString(RandomNumberGenerator.GetBytes(4));
+                Convert.ToHexString(guid_bytes) 
+                + "/" + 
+                Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
 
             string zip_file_path = GetFilePath(key, pwd);
             using (Stream zip_file = File.Create(zip_file_path))
@@ -80,8 +81,28 @@ namespace MeetLocker
         /// <returns></returns>
         public static string GetFilePath(string key, string pwd)
         {
-            string filename = Convert.ToHexString(Encoding.Unicode.GetBytes(key + pwd)) + ".dat";
-            string file_path = Path.Combine(FilesDirPath, filename);
+            string total_key_pwd = Convert.ToHexString(Encoding.Unicode.GetBytes(key + pwd));
+
+            string file_path = FilesDirPath + "/";
+            int chars_per = 16;
+            StringBuilder coll = new StringBuilder(chars_per);
+            for (int i = 0; i < total_key_pwd.Length; ++i)
+            {
+                coll.Append(total_key_pwd[i]);
+                if (coll.Length >= chars_per)
+                {
+                    file_path += coll.ToString() + "/";
+                    coll.Clear();
+                }
+            }
+            if (coll.Length > 0)
+            {
+                file_path += coll.ToString() + "/";
+                coll.Clear();
+            }
+            Directory.CreateDirectory(file_path);
+
+            file_path += "file.dat";
             return file_path;
         }
 
