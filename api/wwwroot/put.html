@@ -18,7 +18,7 @@
 				document.getElementById("copyCloseButton").style.display = "";
 			}
 			else
-				alert("Error occurred storing text.  Try again later.");
+				alert("Error occurred storing text.");
 		}
 	</script>
 </head>
@@ -26,7 +26,8 @@
 	<table width="100%" height="100%">
 		<tr valign="middle">
 			<td align=center>
-				<h1>Store Text - Meet Locker</h1>
+				<img style="width: min(90vw, 640px)" src="header.png" alt="Meet Locker Store" />
+				<h1>Store Text</h1>
 				<table>
 					<tr>
 						<td align="left">
@@ -42,7 +43,7 @@
 
 								<div align="right">
 									<input type=button onclick="window.location = 'index.html'" value="Close">
-									<input type="submit" onclick="doStore()" value="Store File">
+									<input type="submit" onclick="doStore()" value="Store Text">
 								</div>
 							</form>
 
