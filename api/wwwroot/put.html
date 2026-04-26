@@ -6,15 +6,8 @@
 	<script>
 		async function doStore() {
 			const form = document.getElementById("storeForm");
-			form.style.display = "none";
-
-			const form_data = new FormData(form)
-
-            form["text"].value = "";
-            form["pwd"].value = "";
-
-            const response = await fetch("api/put", { method: 'post', body: form_data });
-
+            const response = await fetch("api/put", { method: 'post', body: new FormData(form) });
+            form.style.display = "none";
 			if (response.ok) {
 				document.getElementById("key").innerText = document.createTextNode(await response.text()).textContent;
 				document.getElementById("output").style.display = "";
@@ -24,8 +17,12 @@
 				form.style.display = "";
 			}
 		}
+
+		function doCopy() {
+			navigator.clipboard.writeText(document.getElementById('key').innerText);
+			alert('Key copied!');
+		}
 	</script>
-	<script src="script.js" type="text/javascript"></script>
 </head>
 <body>
 	<table width="100%" height="100%">
@@ -47,8 +44,8 @@
 								<br>
 
 								What password to secure the text?<br>
-								Don't forget your password, you need it to retrieve the text!<br>
-								<input name="pwd" size="80"><br>
+								Don't forget your password; you'll need it to retrieve the text.<br>
+								<input name="pwd" type="password" size="80"><br>
 								<br>
 
 								<div align="center">
@@ -57,13 +54,15 @@
 								</div>
 							</form>
 
-							<div id="output" style="display: none; text-align: center">
-								<p id="msg">Text stored, here's you key:</p>
+							<div id="output" style="display: none">
+								<p id="msg">Text stored, here's your key:</p>
 								<div id="key"></div>
-								<p>You need your password from the previous screen and this key to retrieve the text.</p>
+								<p>You need this key and your password from the previous screen to retrieve the text.</p>
 								<form onsubmit="return false">
-									<button id="copyCloseButton" onclick="window.location = 'index.html'">Close</button>
-									<button id="copyButton" onclick="copy('key'); alert('Key copied!')">Copy Key</button>
+									<div align="center">
+										<button id="copyCloseButton" onclick="window.location = 'index.html'">Close</button>
+										<button id="copyButton" onclick="doCopy()">Copy Key</button>
+									</div>
 								</form>
 							</div>
 						</td>

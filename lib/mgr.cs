@@ -19,8 +19,7 @@ namespace MeetLocker
             // build the key to the castle, er, ZIP file
             byte[] guid_bytes = Guid.NewGuid().ToByteArray();
             string key = 
-                Convert.ToHexString(guid_bytes) 
-                + "_" + 
+                Convert.ToHexString(guid_bytes) +
                 Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
 
             string zip_file_path = GetFilePath(key, pwd);
@@ -81,27 +80,22 @@ namespace MeetLocker
         /// <returns></returns>
         public static string GetFilePath(string key, string pwd)
         {
-            string total_key_pwd = Convert.ToHexString(Encoding.Unicode.GetBytes(key + pwd));
+            string total_key_pwd = Convert.ToHexString(Encoding.UTF8.GetBytes(key + pwd));
 
-            string file_path = FilesDirPath + "/";
             int chars_per = 16;
-            StringBuilder coll = new StringBuilder(chars_per);
-            for (int i = 0; i < total_key_pwd.Length; ++i)
-            {
-                coll.Append(total_key_pwd[i]);
-                if (coll.Length >= chars_per)
-                {
-                    file_path += coll.ToString() + "/";
-                    coll.Clear();
-                }
-            }
-            if (coll.Length > 0)
-            {
-                file_path += coll.ToString() + "/";
-                coll.Clear();
-            }
-            Directory.CreateDirectory(file_path);
+            StringBuilder file_path_builder = new StringBuilder(total_key_pwd.Length * 2);
+            file_path_builder.Append(FilesDirPath);
+            file_path_builder.Append('/');
 
+            var view = total_key_pwd.AsSpan();
+            for (int x = 0; x < total_key_pwd.Length; x += chars_per)
+            {
+                file_path_builder.Append(view.Slice(start: x, length: Math.Min(total_key_pwd.Length - x, chars_per)));
+                file_path_builder.Append('/');
+            }
+            string file_path = file_path_builder.ToString();
+
+            Directory.CreateDirectory(file_path);
             file_path += "file.dat";
             return file_path;
         }

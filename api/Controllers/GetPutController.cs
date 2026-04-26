@@ -32,7 +32,6 @@ namespace api.Controllers
         public async Task<ActionResult> Get([FromForm] GetForm form)
         {
             FileRetrieveHandler handler = Stream (string filename) => {
-                Response.Headers.Append("X-Get-Filename", filename);
                 return Response.Body;
             };
             await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler);
