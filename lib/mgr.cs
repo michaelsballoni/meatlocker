@@ -20,7 +20,7 @@ namespace MeetLocker
             byte[] guid_bytes = Guid.NewGuid().ToByteArray();
             string key = 
                 Convert.ToHexString(guid_bytes) 
-                + "/" + 
+                + "_" + 
                 Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
 
             string zip_file_path = GetFilePath(key, pwd);

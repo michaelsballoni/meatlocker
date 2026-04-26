@@ -2,59 +2,74 @@
 <html lang="en-us">
 <head>
 	<title>Meet Locker - Store Text</title>
-	<style>
-		html, body {
-			height: 100%
-		}
-	</style>
+	<link rel="stylesheet" href="style.css">
 	<script>
 		async function doStore() {
-			const form = document.forms[0];
-			const response = await fetch("api/put", { method: 'post', body: new FormData(form) });
+			const form = document.getElementById("storeForm");
+			form.style.display = "none";
+
+			const form_data = new FormData(form)
+
+            form["text"].value = "";
+            form["pwd"].value = "";
+
+            const response = await fetch("api/put", { method: 'post', body: form_data });
+
 			if (response.ok) {
-				document.getElementById("output").innerHTML = "Text stored!<br><br>Here is the key needed to retrieve the text:<br><br>";
 				document.getElementById("key").innerText = document.createTextNode(await response.text()).textContent;
-				document.getElementById("copyButton").style.display = "";
-				document.getElementById("copyCloseButton").style.display = "";
+				document.getElementById("output").style.display = "";
 			}
-			else
+			else {
 				alert("Error occurred storing text.");
+				form.style.display = "";
+			}
 		}
 	</script>
+	<script src="script.js" type="text/javascript"></script>
 </head>
 <body>
 	<table width="100%" height="100%">
 		<tr valign="middle">
 			<td align=center>
-				<img style="width: min(90vw, 640px)" src="header.png" alt="Meet Locker Store" />
-				<h1>Store Text</h1>
-				<table>
+				<table cellspacing="0" cellpadding="0">
+					<tr>
+						<td align="center">
+							<img style="width: min(90vw, 640px)" src="header.png" alt="Meet Locker Store" />
+						</td>
+					</tr>
+					<tr><td align="left"><h1>Store Text</h1></td></tr>
 					<tr>
 						<td align="left">
-							<form onsubmit="return false">
+							<form id="storeForm" onsubmit="doStore(); return false">
 								What text to store?<br>
 								<textarea name="text" cols="80" rows="10"></textarea>
 								<br>
 								<br>
 
 								What password to secure the text?<br>
+								Don't forget your password, you need it to retrieve the text!<br>
 								<input name="pwd" size="80"><br>
 								<br>
 
-								<div align="right">
-									<input type=button onclick="window.location = 'index.html'" value="Close">
-									<input type="submit" onclick="doStore()" value="Store Text">
+								<div align="center">
+									<button onclick="window.location = 'index.html'">Close</button>
+									<button onclick="doStore()">Store Text</button>
 								</div>
 							</form>
 
-							<div id="output"></div>
-							<div id="key"></div>
-							<br />
-							<input id="copyCloseButton" type=button onclick="window.location = 'index.html'" value="Close" style="display: none">
-							<input id="copyButton" type="button" value="Copy" style="display: none" onclick="navigator.clipboard.writeText(document.getElementById('key').innerText)" />
+							<div id="output" style="display: none; text-align: center">
+								<p id="msg">Text stored, here's you key:</p>
+								<div id="key"></div>
+								<p>You need your password from the previous screen and this key to retrieve the text.</p>
+								<form onsubmit="return false">
+									<button id="copyCloseButton" onclick="window.location = 'index.html'">Close</button>
+									<button id="copyButton" onclick="copy('key'); alert('Key copied!')">Copy Key</button>
+								</form>
+							</div>
 						</td>
 					</tr>
 				</table>
+				<br>
 				Copyright &copy; Michael Balloni.  2026.  All rights reserved.
 			</td>
 		</tr>

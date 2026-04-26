@@ -1,0 +1,23 @@
+﻿html, body {
+    height: 100%;
+    background-color: lightgray;
+    font-family: Fairplex Narrow OT, Grueber, Avenir LT Pro, Verdana;
+}
+
+button {
+    margin: 1em;
+    height: 3em;
+    width: 15em;
+    background-color: darkgray;
+    color: white;
+}
+
+h1 {
+    margin: 0;
+    padding: 0;
+}
+
+#key {
+    background-color: white;
+    color: black;
+}
