@@ -37,14 +37,13 @@
 					<tr><td align="left"><h1>Store Text</h1></td></tr>
 					<tr>
 						<td align="left">
-							<form id="storeForm" onsubmit="doStore(); return false">
+							<form id="storeForm" onsubmit="return false">
 								What text to store?<br>
 								<textarea name="text" cols="80" rows="10"></textarea>
 								<br>
 								<br>
 
-								What password to secure the text?<br>
-								Don't forget your password; you'll need it to retrieve the text.<br>
+								What password to secure the text?  You'll need it to retrieve the text.<br>
 								<input name="pwd" type="password" size="80"><br>
 								<br>
 
@@ -57,7 +56,7 @@
 							<div id="output" style="display: none">
 								<p id="msg">Text stored, here's your key:</p>
 								<div id="key"></div>
-								<p>You need this key and your password from the previous screen to retrieve the text.</p>
+								<p>You need your password from the previous screen and this key to retrieve the text.</p>
 								<form onsubmit="return false">
 									<div align="center">
 										<button id="copyCloseButton" onclick="window.location = 'index.html'">Close</button>
@@ -69,7 +68,7 @@
 					</tr>
 				</table>
 				<br>
-				Copyright &copy; Michael Balloni.  2026.  All rights reserved.
+				Copyright &copy; 2026 - <a target="_blank" href="https://michaelballoni.com">Michael Balloni</a> -  All rights reserved.
 			</td>
 		</tr>
 	</table>

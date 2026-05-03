@@ -7,15 +7,13 @@
 		async function doRetrieve() {
             const form = document.getElementById("retrieveForm");
             const response = await fetch("api/get", { method: 'post', body: new FormData(form) });
-            form.style.display = "none";
             if (response.ok) {
                 document.getElementById("text").value = await response.text();
                 document.getElementById("output").style.display = "";
+	            form.style.display = "none";
             }
             else {
                 alert("Error occurred retrieving text.  Double check your key and secret and try again.");
-                form.style.display = '';
-                document.getElementById("output").style.display = "";
             }
 		}
 
@@ -38,13 +36,13 @@
 					<tr><td align="left"><h1>Retrieve Text</h1></td></tr>
 					<tr>
 						<td align="left">
-							<form id=retrieveForm method="post" onsubmit="doRetrieve();  return false">
+							<form id=retrieveForm method="post" onsubmit="return false">
 								What key to unlock the locker?<br>
 								<input size="80" name="key"><br>
 								<br>
 
 								What password to retrieve the text?<br>
-								<input size="80" name="pwd"><br>
+								<input size="80" name="pwd" type="password"><br>
 								<br>
 
 								<div align="center">
@@ -67,7 +65,7 @@
 					</tr>
 				</table>
 				<br>
-				Copyright &copy; Michael Balloni.  2026.  All rights reserved.
+				Copyright &copy; 2026 - <a target="_blank" href="https://michaelballoni.com">Michael Balloni</a> -  All rights reserved.
 			</td>
 		</tr>
 	</table>

@@ -58,7 +58,7 @@ namespace tests
             }
 
             //
-            // GET - should not work
+            // GET - should not work, text erased after last GET
             //
             {
                 var form_dict = new Dictionary<string, string>();

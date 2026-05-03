@@ -1,7 +1,12 @@
 ﻿html, body {
     height: 100%;
     background-color: lightgray;
-    font-family: Fairplex Narrow OT, Grueber, Avenir LT Pro, Verdana;
+    color: black;
+    font-family: Verdana;
+}
+
+a {
+    color: black;
 }
 
 button {

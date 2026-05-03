@@ -14,15 +14,13 @@ namespace MeetLocker
         /// Give a password and a file, generate a key, and stuff the file bytes into password-protected ZIP file
         /// </summary>
         /// <returns>The key</returns>
-        public static async Task<string> Store(string pwd, string filename, Stream file)
+        public static async Task<string?> Store(string pwd, string filename, Stream file)
         {
-            // build the key to the castle, er, ZIP file
-            byte[] guid_bytes = Guid.NewGuid().ToByteArray();
-            string key = 
-                Convert.ToHexString(guid_bytes) +
-                Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
+            string key = GetKey();
+            string? zip_file_path = GetFilePath(key, pwd);
+            if (zip_file_path == null)
+                return null;
 
-            string zip_file_path = GetFilePath(key, pwd);
             using (Stream zip_file = File.Create(zip_file_path))
             {
                 using (ZipOutputStream zip_file_stream = new ZipOutputStream(zip_file))
@@ -36,15 +34,16 @@ namespace MeetLocker
             return key;
         }
 
+
         /// <summary>
         /// Given key and password, call a handler with the filename (for setting HTTP Content-Disposition).
         /// The handler returns the Stream to write the file contents to.
         /// </summary>
-        public static async Task Retrieve(string key, string pwd, FileRetrieveHandler handler)
+        public static async Task<bool> Retrieve(string key, string pwd, FileRetrieveHandler handler)
         {
             string file_path = GetFilePath(key, pwd);
             if (!File.Exists(file_path))
-                throw new Exception("File not found");
+                return false;
 
             using (Stream file_stream = File.OpenRead(file_path))
             {
@@ -70,6 +69,7 @@ namespace MeetLocker
                 }
             }
             File.Delete(file_path);
+            return true;
         }
 
         /// <summary>
@@ -78,8 +78,11 @@ namespace MeetLocker
         /// <param name="key"></param>
         /// <param name="pwd"></param>
         /// <returns></returns>
-        public static string GetFilePath(string key, string pwd)
+        public static string? GetFilePath(string key, string pwd)
         {
+            if (!IsKeyValid(key))
+                return null;
+
             string total_key_pwd = Convert.ToHexString(Encoding.UTF8.GetBytes(key + pwd));
 
             int chars_per = 16;
@@ -139,5 +142,26 @@ namespace MeetLocker
         }
         private static string? sm_strFilesDirPath = null;
         private static object sm_filesDirPathLock = new object();
+
+        /// Key generation centralized to make a DemoKey for length validation
+        private static string GetKey()
+        {
+            // build the key to the castle with a GUID for uniqueness and randomness for difficulty in guess
+            byte[] guid_bytes = Guid.NewGuid().ToByteArray();
+            string key =
+                Convert.ToHexString(guid_bytes) +
+                Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
+            return key;
+        }
+        public static string DemoKey = GetKey();
+        public static bool IsKeyValid(string key)
+        {
+            if (key.Length != DemoKey.Length)
+                return false;
+            if (key.Any(c => !char.IsAsciiLetterOrDigit(c)))
+                return false;
+            return true;
+        }
+
     }
 }

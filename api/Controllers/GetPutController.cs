@@ -15,9 +15,9 @@ namespace api.Controllers
             public string? text { get; set; }
         }
         [HttpPost("put")]
-        public async Task<ActionResult<string>> Put([FromForm] PutForm form)
+        public async Task<ActionResult<string?>> Put([FromForm] PutForm form)
         {
-            string key;
+            string? key;
             using (var text_stream = new MemoryStream(Encoding.UTF8.GetBytes(form.text ?? "")))
                 key = await Mgr.Store(form.pwd ?? "", form.filename ?? "filename", text_stream);
             return Ok(key);
@@ -34,7 +34,8 @@ namespace api.Controllers
             FileRetrieveHandler handler = Stream (string filename) => {
                 return Response.Body;
             };
-            await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler);
+            if (!await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler))
+                return BadRequest();
             return new EmptyResult();
         }
     }

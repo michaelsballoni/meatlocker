@@ -4,6 +4,15 @@
     public sealed class MgrTests
     {
         [TestMethod]
+        public void TestKeyGenLen()
+        {
+            string demo_key = Mgr.DemoKey;
+            Assert.IsTrue(Mgr.IsKeyValid(demo_key));
+            Assert.IsFalse(Mgr.IsKeyValid(demo_key + "1")); // too long
+            Assert.IsFalse(Mgr.IsKeyValid(demo_key.Substring(0, demo_key.Length - 1) + "/")); // invalid
+        }
+
+        [TestMethod]
         public void TestFilesDirPath()
         {
             string files_dir_path = Mgr.FilesDirPath;
@@ -16,14 +25,11 @@
         [TestMethod]
         public void TestGetFilePath()
         {
-            string file_path_null = Mgr.GetFilePath("", "");
-            Assert.AreEqual(file_path_null, Mgr.GetFilePath("", ""));
+            Assert.IsNull(Mgr.GetFilePath("", ""));
+            Assert.IsNull(Mgr.GetFilePath("key", "val"));
 
-            string file_path_set = Mgr.GetFilePath("key", "val");
-            Assert.AreEqual(file_path_set, Mgr.GetFilePath("key", "val"));
-
-            string file_path_long = Mgr.GetFilePath("keykeykeykeykeykey", "valvalvalvalvalvalval");
-            Assert.AreEqual(file_path_long, Mgr.GetFilePath("keykeykeykeykeykey", "valvalvalvalvalvalval"));
+            string? file_path_long = Mgr.GetFilePath(Mgr.DemoKey, "valvalvalvalvalvalval");
+            Assert.AreEqual(file_path_long, Mgr.GetFilePath(Mgr.DemoKey, "valvalvalvalvalvalval"));
         }
 
         [TestMethod]
