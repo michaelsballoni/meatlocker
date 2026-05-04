@@ -1,9 +1,0 @@
-html, body {
-    height: 100%;
-    font-family: Verdana;
-    background-color: lightgray;
-}
-
-img {
-    width: min(90vw, 640px);
-}

@@ -144,7 +144,7 @@ namespace MeetLocker
         private static object sm_filesDirPathLock = new object();
 
         /// Key generation centralized to make a DemoKey for length validation
-        private static string GetKey()
+        public static string GetKey()
         {
             // build the key to the castle with a GUID for uniqueness and randomness for difficulty in guess
             byte[] guid_bytes = Guid.NewGuid().ToByteArray();
@@ -162,6 +162,5 @@ namespace MeetLocker
                 return false;
             return true;
         }
-
     }
 }

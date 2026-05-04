@@ -1,0 +1,11 @@
+{
+    "name": "Meet Locker",
+    "short_name": "Meet Locker",
+    "description": "Demonstation of source code for file locker type application ",
+    "author": "Michael Balloni",
+    "start_url": "/",
+    "orientation": "portrait",
+    "display": "standalone",
+    "background_color": "black",
+    "theme_color": "black"
+}

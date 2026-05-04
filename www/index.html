@@ -1,51 +1,248 @@
 <html>
     <head>
+        <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="msapplication-TileColor" content="black">
+        <meta name="theme-color" content="black">
+        <link rel="manifest" href="manifest.json" />
+        
         <title>Meet Locker</title>
         <link rel="stylesheet" href="style.css">
+        <style>
+            html, body {
+                height: 100%;
+                font-family: Verdana;
+                background-color: lightgray;
+                color: black;
+            }
+
+            a {
+                color: red;
+            }
+
+            img {
+                width: min(90vw, 640px);
+            }
+
+            .myPre {
+                width: min(90vw, 640px);
+                overflow: auto;
+            }
+
+            #pageTable {
+                width: min(90vw, 640px);
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
     </head>
     <body>
-        <table align="center">
+        <table id=pageTable align="center">
             <tr>
                 <td align="left">
                     <h1>Meet Locker</h1>
                     <p>
-                        <b>Meet Locker</b> is an application that allows users to store and retrieve files.
+                        <b>Meet Locker</b> is an application that allows users to securely store and retrieve data.
                     </p>
-                    <p>
-                        <img src="home.png">
-                    </p>
+
+                    <img src="home.png">
+                    <br clear=all>
+                    <br>
                     <p>
                         Press the Store button and you get the screen to enter the data and password:
                     </p>
                     <img src="store1.png">
+                    <br clear=all>
+                    <br>
+
+                    <p>
+                        Server API code for receiving text and password and returning key:
+                    </p>
+<div class="myPre"><pre class="prettyprint">
+public class PutForm
+{
+    public string? pwd { get; set; }
+    public string? filename { get; set; }
+    public string? text { get; set; }
+}
+[HttpPost("put")]
+public async Task<ActionResult<string?>> Put([FromForm] PutForm form)
+{
+    string? key;
+    using (var text_stream = new MemoryStream(Encoding.UTF8.GetBytes(form.text ?? "")))
+        key = await Mgr.Store(form.pwd ?? "", form.filename ?? "filename", text_stream);
+    return Ok(key);
+}</pre></div>
+                    <p>
+                        Server (Mgr) backend code for processing text and password into key:
+                    </p>                 
+<div class="myPre"><pre class="prettyprint">
+public static async Task&lt;string?> Store(string pwd, string filename, Stream file)
+{
+    string key = GetKey();
+    string? zip_file_path = GetFilePath(key, pwd);
+    if (zip_file_path == null)
+        return null;
+
+    using (Stream zip_file = File.Create(zip_file_path))
+    {
+        using (ZipOutputStream zip_file_stream = new ZipOutputStream(zip_file))
+        {
+            var entry = new ZipEntry(filename);
+            zip_file_stream.PutNextEntry(entry);
+            zip_file_stream.Password = pwd;
+            await file.CopyToAsync(zip_file_stream);
+        }
+    }
+    return key;
+}
+
+// Given key and password return where the file might be found
+public static string? GetFilePath(string key, string pwd)
+{
+    if (!IsKeyValid(key))
+        return null;
+
+    string total_key_pwd = Convert.ToHexString(Encoding.UTF8.GetBytes(key + pwd));
+
+    int chars_per = 16;
+    StringBuilder file_path_builder = new StringBuilder(total_key_pwd.Length * 2);
+    file_path_builder.Append(FilesDirPath);
+    file_path_builder.Append('/');
+
+    var view = total_key_pwd.AsSpan();
+    for (int x = 0; x &lt; total_key_pwd.Length; x += chars_per)
+    {
+        file_path_builder.Append(view.Slice(start: x, length: Math.Min(total_key_pwd.Length - x, chars_per)));
+        file_path_builder.Append('/');
+    }
+    string file_path = file_path_builder.ToString();
+
+    Directory.CreateDirectory(file_path);
+    file_path += "file.dat";
+    return file_path;
+}
+
+// Key generation centralized to make a DemoKey for length validation
+public static string GetKey()
+{
+    // build the key to the castle with a GUID for uniqueness and randomness for difficulty in guess
+    byte[] guid_bytes = Guid.NewGuid().ToByteArray();
+    string key =
+        Convert.ToHexString(guid_bytes) +
+        Convert.ToHexString(RandomNumberGenerator.GetBytes(guid_bytes.Length));
+    return key;
+}
+public static string DemoKey = GetKey();
+public static bool IsKeyValid(string key)
+{
+    if (key.Length != DemoKey.Length)
+        return false;
+    if (key.Any(c => !char.IsAsciiLetterOrDigit(c)))
+        return false;
+    return true;
+}</pre></div>
+<br>
                     
                     <p>
                         You receive the key needed to get the data back:
                     </p>
                     <img src="store2.png">
+                    <br clear=all>
+                    <br>
 
                     <p>
-                        As someone else, somewhere else, you get the key and password, and you get a screen to enter them:
+                        Someone gets the key and password and presses the Retrieve button on the home page to enter them:
                     </p>
                     <p>
                     <img src="get1.png">
-                    
+                    <br clear=all>
+                    <br>
+
                     <p>
-                        You receive the data back:
+                        Server API code for receiving key and password and returning text:
+                    </p>
+<div class="myPre"><pre class="prettyprint">
+public class GetForm
+{
+    public string? key { get; set; }
+    public string? pwd { get; set; }
+}
+[HttpPost("get")]
+public async Task&lt;ActionResult> Get([FromForm] GetForm form)
+{
+    FileRetrieveHandler handler = Stream (string filename) => {
+        return Response.Body;
+    };
+    if (!await Mgr.Retrieve(form.key ?? "", form.pwd ?? "", handler))
+        return BadRequest();
+    return new EmptyResult();
+}</pre></div>
+
+                    <p>
+                        Server (Mgr) backend code for processing key and password into text:
+                    </p>                 
+<div class="myPre"><pre class="prettyprint">
+// Given key and password, call a handler with the filename (for setting HTTP Content-Disposition).
+// The handler returns the Stream to write the file contents to.
+public static async Task&lt;bool> Retrieve(string key, string pwd, FileRetrieveHandler handler)
+{
+    string file_path = GetFilePath(key, pwd);
+    if (!File.Exists(file_path))
+        return false;
+
+    using (Stream file_stream = File.OpenRead(file_path))
+    {
+        using (ZipFile zip_file = new ZipFile(file_stream))
+        {
+            zip_file.Password = pwd;
+
+            string filename = "";
+            foreach (ZipEntry entry in zip_file)
+            {
+                filename = entry.Name;
+                break;
+            }
+            if (string.IsNullOrWhiteSpace(filename))
+                throw new Exception("Filename not found");
+
+            using (var zip_stream = zip_file.GetInputStream(0))
+            {
+                var output_stream = handler(filename);
+                await zip_stream.CopyToAsync(output_stream);
+                output_stream.Dispose();
+            }
+        }
+    }
+    File.Delete(file_path);
+    return true;
+}</pre></div> 
+<br>
+
+                    <p>
+                        They receive the data:
                     </p>
                     <img src="get2.png">
+                    <br clear=all>
+                    <br>
+
+                    <p>
+                        The server deletes the locker, and the deed is done.
+                    </p>
 
                     <h1>Notes</h1>
                     <p>
-                        This version of the application is a proof-of-concept demostrating 
-                        the code involved with doing something like this.
+                        This is a proof-of-concept demonstrating the code involved with doing something like this.
+                    </p>
+                    <p>
+                        The application is a self-contained portable ASP.NET Core Web API Kestrel program.
                     </p>
                     <p>
                         The application is distributed via source code at
-                        <a target="_blank" href="https://github.com/michaelsballoni/meatlocker">GitHub</a>
+                        <a target="_blank" href="https://github.com/michaelsballoni/meatlocker">GitHub</a>.
                     </p>
                     <p>
-                        The web server is a portable ASP.NET Core Web API Kestrel program.
+                        There is no "live" version of this application.  It's a source code demonstration.
+                        I hope for derivative work that goes live with something along these lines.
                     </p>
                     <p>
                         Send questions and comments to Michael Balloni
@@ -58,12 +255,6 @@
                     <p>
                         Enjoy!
                     </p>
-                    <p>
-                        There is no public version of this application.  It's a source code demonstration.
-                        But it does work on my system, so I can show you these screens and the code behind them, 
-                        which is the whole point.
-                    </p>
-
                     <p>
                         Copyright &copy; 2026 - <a target="_blank" href="https://michaelballoni.com">Michael Balloni</a> -  All rights reserved.
                     </p>
